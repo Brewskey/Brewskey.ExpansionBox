@@ -51,9 +51,6 @@ void main(void)
 
 		/* Read the flow continuously */	
 		Read_Flow();
-
-
-		 
 	}
 }
 

@@ -5,22 +5,20 @@
 #include <util/delay.h>
 
 
+#include "constants.h"
 #include "hardware.h"
 #include "timer.h"
 #include "uart.h"
 
+uint8_t MOSFET_PINS[PORT_COUNT] = {PD5, PD6, PD7, PB0};
+uint8_t FLOW_SENSOR_PINS[PORT_COUNT] = {PC1, PC2, PC3, PC4};
 
 void hardware_init(void)
 {
-	MOSFET1_DIR;
-	MOSFET2_DIR;
-	MOSFET3_DIR;
-	MOSFET4_DIR;
-	
-	FLOW1_DIR;
-	FLOW2_DIR;
-	FLOW3_DIR;
-	FLOW4_DIR;
+	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
+		MOSFET_DIR(ii);
+		FLOW_DIR(ii);
+	}
 	
 	RS485_DIR;	
 	

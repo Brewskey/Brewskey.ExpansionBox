@@ -4,157 +4,78 @@
 #include "mosfet.h"
 #include "flow.h"
 
+uint8_t MOSFET_NETWORK_MASK[PORT_COUNT] = {0x03, 0x0C, 0x30, 0xC0};
+	
 /* Holds the states of the Mosfets */
 uint8_t stateMosfets = 0;
 
 /* Holds the ON time of the Mosfets */
-MOSFET_TIMER_t mosfetTimers;
+uint8_t mosfetTimers[PORT_COUNT];
 
 void Mosfet_Init(void)
 {
-	/* Switch off Mosfets */
-	Mosfet_On_Off(MOSFET_1, OFF);
-	Mosfet_On_Off(MOSFET_2, OFF);
-	Mosfet_On_Off(MOSFET_3, OFF);
-	Mosfet_On_Off(MOSFET_4, OFF);
-	
-	/* Resets Mosfet timers */
-	mosfetTimers.mosfet1 = 0;
-	mosfetTimers.mosfet2 = 0;
-	mosfetTimers.mosfet3 = 0;
-	mosfetTimers.mosfet4 = 0;
+	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
+		// Switch off Mosfets
+		Mosfet_On_Off(ii, OFF);
+		// Resets Mosfet timers
+		mosfetTimers[ii] = 0;
+	}
 	
 }
 
 /***********************************************
 Brief: Switches On/Off the Mosfets.
 Param: Mosfet, State.
-Retur: None.
+Return: None.
 
-Descr: Switches On/Off the Mosfets. When a Mosfet 
-       is swithed on, it's repective flow counter
+Description: Switches On/Off the Mosfets. When a Mosfet 
+       is switched on, it's respective flow counter
 	   is reset.
 ************************************************/
-void Mosfet_On_Off(MOSFET_t mosfet, STATE_t state)
+void Mosfet_On_Off(uint8_t mosfetIndex, STATE_t state)
 {
-	switch(mosfet)
+	if (mosfetIndex >= PORT_COUNT) {
+		return;
+	}
+	
+	uint8_t mosfetFlag = (uint8_t)pow(2, mosfetIndex);
+	if(state)
 	{
-		case MOSFET_1:
-				
-				if(state)
-				{
-					if(!(stateMosfets & MOSFET1_ACTIVE))
-					{
-						/* Reset flow count only if Mosfet is off */
-						/* else it will reset every time it receive on from network */
-						Reset_Flow(FLOW1);
-						
-						/* Reset Mosfet Timer */
-						mosfetTimers.mosfet1 = 0;
-					}
-					
-					stateMosfets |= MOSFET1_ACTIVE; 	
-					MOSFET1_ON;
-				}
-				else
-				{
-					stateMosfets &= ~MOSFET1_ACTIVE;
-					MOSFET1_OFF;
-				}
-				
-				break;
-				
-		case MOSFET_2:
+		bool isMosfetActive = stateMosfets & mosfetFlag;
+		if(!isMosfetActive)
+		{
+			/* Reset flow count only if Mosfet is off */
+			/* else it will reset every time it receive on from network */
+			Reset_Flow(mosfetIndex);
+			
+			/* Reset Mosfet Timer */
+			mosfetTimers[mosfetIndex] = 0;
+		}
 		
-				if(state)
-				{
-					if(!(stateMosfets & MOSFET2_ACTIVE))
-					{
-						/*reset flow count only if mosfet is off*/
-						Reset_Flow(FLOW2);
-						
-						mosfetTimers.mosfet2 = 0;						
-					}
-					
-					stateMosfets |= MOSFET2_ACTIVE; 
-					MOSFET2_ON;
-				}
-				else
-				{
-					stateMosfets &= ~MOSFET2_ACTIVE;
-					MOSFET2_OFF;
-				}
-				
-				break;				
-
-		case MOSFET_3:
-		
-				if(state)
-				{
-					if(!(stateMosfets & MOSFET3_ACTIVE))
-					{
-						/*reset flow count only if mosfet is off*/
-						Reset_Flow(FLOW3);
-						
-						mosfetTimers.mosfet3 = 0;						
-					}
-
-					stateMosfets |= MOSFET3_ACTIVE; 
-					MOSFET3_ON;
-				}
-				else
-				{
-					stateMosfets &= ~MOSFET3_ACTIVE;
-					MOSFET3_OFF;
-				}
-				
-				break;
-
-		case MOSFET_4:
-		
-				if(state)
-				{
-					if(!(stateMosfets & MOSFET4_ACTIVE))
-					{
-						/*reset flow count only if mosfet is off*/
-						Reset_Flow(FLOW4);
-						
-						mosfetTimers.mosfet4 = 0;						
-					}
-
-					stateMosfets |= MOSFET4_ACTIVE; 
-					MOSFET4_ON;
-				}
-				else
-				{
-					stateMosfets &= ~MOSFET4_ACTIVE;
-					MOSFET4_OFF;
-				}
-				
-				break;				
+		stateMosfets |= mosfetFlag;
+		MOSFET_ON(mosfetIndex);
+	}
+	else
+	{
+		stateMosfets &= ~mosfetFlag;
+		MOSFET_OFF(mosfetIndex);
 	}
 }
 
 /***********************************************
 Brief: Increments Mosfet Timer.
 Param: None.
-Retur: None.
+Return: None.
 
-Descr: Increments Mosfet Timer.
+Description: Increments Mosfet Timer.
 ************************************************/
 void Incr_Mosfet_Timers(void)
 {
-	if( mosfetTimers.mosfet1 < 250 )
-		mosfetTimers.mosfet1++;
-	
-	if( mosfetTimers.mosfet2 < 250 )
-		mosfetTimers.mosfet2++;
-
-	if( mosfetTimers.mosfet3 < 250 )
-		mosfetTimers.mosfet3++;
-
-	if( mosfetTimers.mosfet4 < 250 )
-		mosfetTimers.mosfet4++;
+	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
+		if( mosfetTimers[ii] < 250 ) {
+			mosfetTimers[ii]++;
+		}
+	}
 	
 }
 
@@ -163,7 +84,7 @@ uint8_t getStateMosfets(void)
 	return stateMosfets;
 }
 
-MOSFET_TIMER_t getMosfetTimers(void)
+uint8_t* getMosfetTimers(void)
 {
 	return mosfetTimers;
 }

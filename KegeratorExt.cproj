@@ -153,6 +153,9 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="constants.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="flow.c">
       <SubType>compile</SubType>
     </Compile>

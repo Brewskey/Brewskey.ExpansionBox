@@ -138,9 +138,10 @@ uint8_t hardware_USART0_Rx_Check(void)
 
 void hardware_rs232_send(void)
 {
-	char data_packet[20];
+	uint8_t checksumIndex = (PORT_COUNT + 1) * 4;
+	char data_packet[checksumIndex];
 	uint8_t checksum = 0;
-	uint8_t i;
+	uint8_t ii;
 	
 	uint32_t tempFlow;	
 		
@@ -151,47 +152,33 @@ void hardware_rs232_send(void)
 	data_packet[2] =  (uint8_t) 0x33;     
 	data_packet[3] =  (uint8_t) getStateMosfets();
 	
-	tempFlow = Get_Flow(FLOW1);
-	data_packet[4] =  (uint8_t) (tempFlow >> 24);
-	data_packet[5] =  (uint8_t) (tempFlow >> 16);
-	data_packet[6] =  (uint8_t) (tempFlow >> 8);
-	data_packet[7] =  (uint8_t) (tempFlow);
-
-	tempFlow = Get_Flow(FLOW2);
-	data_packet[8] =  (uint8_t) (tempFlow >> 24);
-	data_packet[9] =  (uint8_t) (tempFlow >> 16);
-	data_packet[10] =  (uint8_t) (tempFlow >> 8);
-	data_packet[11] =  (uint8_t) (tempFlow);
-	
-	tempFlow = Get_Flow(FLOW3);
-	data_packet[12] =  (uint8_t) (tempFlow >> 24);
-	data_packet[13] =  (uint8_t) (tempFlow >> 16);
-	data_packet[14] =  (uint8_t) (tempFlow >> 8);
-	data_packet[15] =  (uint8_t) (tempFlow);	
-	
-	tempFlow = Get_Flow(FLOW4);
-	data_packet[16] =  (uint8_t) (tempFlow >> 24);
-	data_packet[17] =  (uint8_t) (tempFlow >> 16);
-	data_packet[18] =  (uint8_t) (tempFlow >> 8);
-	data_packet[19] =  (uint8_t) (tempFlow);	
-
-	
-	for(i = 0; i<20; i++)									
-	{
-		checksum ^= data_packet[i];
+	for (ii = 0; ii < PORT_COUNT; ii++) {
+		tempFlow = Get_Flow(ii);
+		uint8_t offset = ii * 4;
+		data_packet[4 + offset] =  (uint8_t) (tempFlow >> 24);
+		data_packet[5 + offset] =  (uint8_t) (tempFlow >> 16);
+		data_packet[6 + offset] =  (uint8_t) (tempFlow >> 8);
+		data_packet[7 + offset] =  (uint8_t) (tempFlow);
 	}
 	
-	data_packet[20] = (255 - checksum);						/* Calculate checksum */
+	// Calculate checksum
+	for(ii = 0; ii < 20; ii++)									
+	{
+		checksum ^= data_packet[ii];
+	}
+	
+	data_packet[checksumIndex] = (255 - checksum);
 	
 	
-	hardware_USART0_send_esc('+', data_packet, 21);			/* Start the transmission routines */ 
-
+	// Start the transmission routines
+	// 
+	hardware_USART0_send_esc('+', data_packet, checksumIndex + 1);			
 }
 
 
 uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so often for any received packets */
 {
-	uint8_t i,data;
+	uint8_t ii, data;
 	static uint8_t count = 0;
 	static uint8_t esc_flag = 0;
 	uint8_t checksum = 0;
@@ -212,9 +199,9 @@ uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so ofte
 				if(data == '+')						/* Getting sync byte of packet, since no escape byte beore it */
 				{
 					count = 0;						/* Reset Counter - since start of packet */
-					for(i=0; i<PACKET_BUFFER; i++)	
+					for(ii = 0; ii < PACKET_BUFFER; ii++)	
 					{
-						usart0_buffer.rs232_packet[i] = 0;	/* Clearing packet buffer */ 
+						usart0_buffer.rs232_packet[ii] = 0;	/* Clearing packet buffer */ 
 					}
 					
 					return 0;
@@ -224,9 +211,9 @@ uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so ofte
 				{
 					checksum = 0;					/* Reset checksum */
 					
-					for(i=0; i<(count-1); i++)		/* Calculating checksum of packet */
+					for(ii = 0; ii< count - 1; ii++)		/* Calculating checksum of packet */
 					{
-						checksum ^= usart0_buffer.rs232_packet[i];
+						checksum ^= usart0_buffer.rs232_packet[ii];
 					}
 						
 					checksum = 255 - checksum;
@@ -280,57 +267,33 @@ uint8_t hardware_rs232_receive(void)
 	uint8_t mosfetActive;
 	uint8_t mosfetDeActive;
 	
-	if(hardware_rs232_receive_packet())
+	if(!hardware_rs232_receive_packet())
 	{
-		if( (usart0_buffer.rs232_packet[0] == 0x01) && (usart0_buffer.rs232_packet[1] == 0x00) && (usart0_buffer.rs232_packet[2] == 0x22) )
+		return 0;
+	}
+	
+	if( 
+		usart0_buffer.rs232_packet[0] != 0x01 || 
+		usart0_buffer.rs232_packet[1] != 0x00 || 
+		usart0_buffer.rs232_packet[2] != 0x22 
+	) {
+		return 0;
+	}
+	
+	mosfetActive = usart0_buffer.rs232_packet[3];
+	mosfetDeActive = usart0_buffer.rs232_packet[4]; 
+			
+	/* Each Mosfet is switched On via network */
+	/* It can be also switched OFF, but switch on takes priority */
+			
+	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
+		if( (mosfetActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
 		{
-			mosfetActive = usart0_buffer.rs232_packet[3];
-			mosfetDeActive = usart0_buffer.rs232_packet[4]; 
-			
-			/* Each Mosfet is switched On via network */
-			/* It can be also switched OFF, but switch on takes priority */
-			
-			/* Switch On Mosfet 1 */
-			if( (mosfetActive & COMMS_MOSFET1_ON) == COMMS_MOSFET1_ON)
-			{
-				Mosfet_On_Off(MOSFET_1, ON);
-			}
-			else if( (mosfetDeActive & COMMS_MOSFET1_OFF) == COMMS_MOSFET1_OFF)
-			{
-				Mosfet_On_Off(MOSFET_1, OFF);
-			}
-			
-			/* Switch On Mosfet 2 */
-			if( (mosfetActive & COMMS_MOSFET2_ON) == COMMS_MOSFET2_ON)
-			{
-				Mosfet_On_Off(MOSFET_2, ON);
-			}			
-			else if( (mosfetDeActive & COMMS_MOSFET2_OFF) == COMMS_MOSFET2_OFF)
-			{
-				Mosfet_On_Off(MOSFET_2, OFF);
-			}
-			
-			/* Switch On Mosfet 3 */
-			if( (mosfetActive & COMMS_MOSFET3_ON) == COMMS_MOSFET3_ON)
-			{
-				Mosfet_On_Off(MOSFET_3, ON);
-			}				
-			else if( (mosfetDeActive & COMMS_MOSFET3_OFF) == COMMS_MOSFET3_OFF)
-			{
-				Mosfet_On_Off(MOSFET_3, OFF);
-			}
-			
-			/* Switch On Mosfet 4 */
-			if( (mosfetActive & COMMS_MOSFET4_ON) == COMMS_MOSFET4_ON)
-			{
-				Mosfet_On_Off(MOSFET_4, ON);
-			}				
-			else if( (mosfetDeActive & COMMS_MOSFET4_OFF) == COMMS_MOSFET4_OFF)
-			{
-				Mosfet_On_Off(MOSFET_4, OFF);
-			}			
-			
-			return 1;
+			Mosfet_On_Off(ii, ON);
+		}
+		else if( (mosfetDeActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
+		{
+			Mosfet_On_Off(ii, OFF);
 		}
 	}
 	
@@ -339,7 +302,8 @@ uint8_t hardware_rs232_receive(void)
 
 void hardware_rs232_comms(void)
 {
-	uint8_t rs232_receive_flag = hardware_rs232_receive();		/* If reception/decoding is ok - send reply */
+	// If reception/decoding is OK - send reply
+	uint8_t rs232_receive_flag = hardware_rs232_receive();		
 		
 	if( rs232_receive_flag != 0)
 	{
@@ -349,8 +313,9 @@ void hardware_rs232_comms(void)
 			timer.rs232_timeout = 0;
 			
 		}
-				
-		hardware_rs232_send();									/* Send reply back */
+		
+		// Send reply back		
+		hardware_rs232_send();									
 	}
 
 	if(timer.rs232_timeout > RS232_TIMEOUT && usart0_buffer.rs232_status == STATUS_ON)
