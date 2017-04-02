@@ -53,12 +53,12 @@ void Mosfet_On_Off(uint8_t mosfetIndex, STATE_t state)
 		}
 		
 		stateMosfets |= mosfetFlag;
-		MOSFET_ON(mosfetIndex);
+		mosfet_on(mosfetIndex);
 	}
 	else
 	{
 		stateMosfets &= ~mosfetFlag;
-		MOSFET_OFF(mosfetIndex);
+		mosfet_off(mosfetIndex);
 	}
 }
 

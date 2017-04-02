@@ -295,7 +295,7 @@ uint8_t hardware_rs232_receive(void)
 		}
 	}
 	
-	return 0;
+	return 1;
 }
 
 void hardware_rs232_comms(void)

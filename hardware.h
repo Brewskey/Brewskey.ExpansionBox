@@ -12,11 +12,6 @@
 uint8_t MOSFET_PINS[PORT_COUNT];
 uint8_t FLOW_SENSOR_PINS[PORT_COUNT];
 
-/* ================== MOSFETS ================== */
-#define MOSFET_ON(pinIndex)    PORTD |= _BV(MOSFET_PINS[pinIndex])
-#define MOSFET_OFF(pinIndex)   PORTD &= ~_BV(MOSFET_PINS[pinIndex])
-#define MOSFET_DIR(pinIndex)   DDRD  |= _BV(MOSFET_PINS[pinIndex])
-
 /* ================== FLOW SENSORS ================== */
 #define FLOW_DIR(pinIndex)     DDRC &= ~_BV(FLOW_SENSOR_PINS[pinIndex])
 #define FLOW_STATUS(pinIndex)  PINC & _BV(FLOW_SENSOR_PINS[pinIndex])
@@ -32,5 +27,9 @@ uint8_t FLOW_SENSOR_PINS[PORT_COUNT];
 #endif
 
 void hardware_init(void);
+
+void mosfet_on(uint8_t pinIndex);
+void mosfet_off(uint8_t pinIndex);
+void mosfet_dir(uint8_t pinIndex);
 
 #endif

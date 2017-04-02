@@ -16,7 +16,7 @@ uint8_t FLOW_SENSOR_PINS[PORT_COUNT] = {PC1, PC2, PC3, PC4};
 void hardware_init(void)
 {
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
-		MOSFET_DIR(ii);
+		mosfet_dir(ii);
 		FLOW_DIR(ii);
 	}
 	
@@ -38,3 +38,31 @@ void hardware_init(void)
 	sei();
 }
 
+
+/* ================== MOSFETS ================== */
+void mosfet_on(uint8_t pinIndex) 
+{
+	if (pinIndex < 3) {
+		PORTD |= _BV(MOSFET_PINS[pinIndex]);
+	} else {
+		PORTB |= _BV(MOSFET_PINS[pinIndex]);
+	}
+}
+
+void mosfet_off(uint8_t pinIndex) 
+{
+	if (pinIndex < 3) {
+		PORTD &= ~_BV(MOSFET_PINS[pinIndex]);
+	} else {
+		PORTB &= ~_BV(MOSFET_PINS[pinIndex]);
+	}
+}
+
+void mosfet_dir(uint8_t pinIndex) 
+{
+	if (pinIndex < 3) {
+		DDRD  |= _BV(MOSFET_PINS[pinIndex]);
+	} else {
+		DDRB  |= _BV(MOSFET_PINS[pinIndex]);
+	}
+}
