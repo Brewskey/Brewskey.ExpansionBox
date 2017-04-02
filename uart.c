@@ -70,14 +70,14 @@ void hardware_USART0_send_esc(char stx, char* pstr, int length)
 
 	if( temp_head != usart0_buffer.TxTail)								/* Check if temp head is equal to tail */
 	{
-		usart0_buffer.TxHead = temp_head;								/* If not equal, set temp head to head, basic incr head */
+		usart0_buffer.TxHead = temp_head;								/* If not equal, set temp head to head, basic increment head */
 		usart0_buffer.TxBuffer[usart0_buffer.TxHead] = stx;				/* Write first char '+' in head position */
 	}
 	
 	while((i < length)) 												/* Loop around the data buffer */
 	{
 			
-	    temp_head = (usart0_buffer.TxHead + 1) & USART_BUFFER_MASK;		/* Inc temp head */
+	    temp_head = (usart0_buffer.TxHead + 1) & USART_BUFFER_MASK;		/* Increment temp head */
 
 	    if( (*str == '*' || *str == '+' || *str == '-' || *str == '#') && temp_head != usart0_buffer.TxTail)
 	    {
@@ -85,36 +85,36 @@ void hardware_USART0_send_esc(char stx, char* pstr, int length)
 			usart0_buffer.TxBuffer[usart0_buffer.TxHead] = '#';		/* Place '#' in current location */
 	    }
 
-		temp_head = (usart0_buffer.TxHead + 1) & USART_BUFFER_MASK;	/* Incr temp head (same condition as before if no symbol found) */
+		temp_head = (usart0_buffer.TxHead + 1) & USART_BUFFER_MASK;	/* Increment temp head (same condition as before if no symbol found) */
 
 	    if( temp_head != usart0_buffer.TxTail)						/* If tail not reached */
 	    {
-			usart0_buffer.TxHead = temp_head;						/* Incr head */
+			usart0_buffer.TxHead = temp_head;						/* Increment head */
 			usart0_buffer.TxBuffer[usart0_buffer.TxHead] = *str;	/* Place char in buffer */
 	    }
 		
 		str++;														/* Point to next char */
-		i++;														/* Incr length index */
+		i++;														/* Increment length index */
 	}
 	
-	temp_head = (usart0_buffer.TxHead + 1) & USART_BUFFER_MASK;		/* Incr temp head */
+	temp_head = (usart0_buffer.TxHead + 1) & USART_BUFFER_MASK;		/* Increment temp head */
 
 	if( temp_head != usart0_buffer.TxTail)							/* If tail not reached */
 	{
-		usart0_buffer.TxHead = temp_head;							/* Incr head */
+		usart0_buffer.TxHead = temp_head;							/* Increment head */
 		usart0_buffer.TxBuffer[usart0_buffer.TxHead] = '-';			/* Place '-' */
 	}
 	
 	if(usart0_buffer.transmit_active == 0)							
 	{
 		usart0_buffer.TxTail = (usart0_buffer.TxTail + 1) & USART_BUFFER_MASK;	/* Inc tail, which now will point to the first written byte */
-		UDR = usart0_buffer.TxBuffer[usart0_buffer.TxTail];						/* Send read byte to uart, routine then coninues in ISR */
+		UDR = usart0_buffer.TxBuffer[usart0_buffer.TxTail];						/* Send read byte to UART, routine then continues in ISR */
 		usart0_buffer.transmit_active = 1;										/* Set flag */
 	}
 	
 }
 
-/* Get byte fom buffer */
+/* Get byte from buffer */
 char hardware_USART0_receive(void)
 {
       if(usart0_buffer.RxTail != usart0_buffer.RxHead)								/* If buffer no empty */	
@@ -129,17 +129,15 @@ char hardware_USART0_receive(void)
 /* Checking if the buffer is empty */
 uint8_t hardware_USART0_Rx_Check(void)
 {
-	if(usart0_buffer.RxTail != usart0_buffer.RxHead)
-	  return 1;		/* Buffer not empty */
-	else
-	  return 0;		/* Empty buffer */
+	return usart0_buffer.RxTail != usart0_buffer.RxHead
+		? 1		// Buffer not empty
+		: 0;	// Empty buffer
 }
 
 
 void hardware_rs232_send(void)
 {
-	uint8_t checksumIndex = (PORT_COUNT + 1) * 4;
-	char data_packet[checksumIndex];
+	char data_packet[PACKET_BUFFER_SIZE];
 	uint8_t checksum = 0;
 	uint8_t ii;
 	
@@ -167,12 +165,12 @@ void hardware_rs232_send(void)
 		checksum ^= data_packet[ii];
 	}
 	
-	data_packet[checksumIndex] = (255 - checksum);
+	data_packet[PACKET_BUFFER_SIZE] = (255 - checksum);
 	
 	
 	// Start the transmission routines
 	// 
-	hardware_USART0_send_esc('+', data_packet, checksumIndex + 1);			
+	hardware_USART0_send_esc('+', data_packet, PACKET_BUFFER_SIZE + 1);			
 }
 
 
@@ -199,7 +197,7 @@ uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so ofte
 				if(data == '+')						/* Getting sync byte of packet, since no escape byte beore it */
 				{
 					count = 0;						/* Reset Counter - since start of packet */
-					for(ii = 0; ii < PACKET_BUFFER; ii++)	
+					for(ii = 0; ii < PACKET_BUFFER_SIZE; ii++)	
 					{
 						usart0_buffer.rs232_packet[ii] = 0;	/* Clearing packet buffer */ 
 					}
@@ -235,7 +233,7 @@ uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so ofte
 			}
 			
 		
-			if(count < PACKET_BUFFER)						/* If count still less than packet buffer size */
+			if(count < PACKET_BUFFER_SIZE)						/* If count still less than packet buffer size */
 			{
 				usart0_buffer.rs232_packet[count] = data;	/* Store data in buffer */
 				count++;									/* Increment counter */
@@ -287,11 +285,11 @@ uint8_t hardware_rs232_receive(void)
 	/* It can be also switched OFF, but switch on takes priority */
 			
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
-		if( (mosfetActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
+		if ((mosfetActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
 		{
 			Mosfet_On_Off(ii, ON);
 		}
-		else if( (mosfetDeActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
+		else if ((mosfetDeActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
 		{
 			Mosfet_On_Off(ii, OFF);
 		}
@@ -322,5 +320,4 @@ void hardware_rs232_comms(void)
 	{
 		usart0_buffer.rs232_status = STATUS_OFF;
 	}
-	
 }
