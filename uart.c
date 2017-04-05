@@ -148,19 +148,20 @@ void hardware_rs232_send(void)
 	data_packet[0] =  (uint8_t) 0x00;
 	data_packet[1] =  (uint8_t) 0x01;
 	data_packet[2] =  (uint8_t) 0x33;     
-	data_packet[3] =  (uint8_t) getStateMosfets();
+	data_packet[3] =  (uint8_t) USART_SEND_MESSAGE_VERSION;
+	data_packet[4] =  (uint8_t) getStateMosfets();
 	
 	for (ii = 0; ii < PORT_COUNT; ii++) {
 		tempFlow = Get_Flow(ii);
 		uint8_t offset = ii * 4;
-		data_packet[4 + offset] =  (uint8_t) (tempFlow >> 24);
-		data_packet[5 + offset] =  (uint8_t) (tempFlow >> 16);
-		data_packet[6 + offset] =  (uint8_t) (tempFlow >> 8);
-		data_packet[7 + offset] =  (uint8_t) (tempFlow);
+		data_packet[5 + offset] =  (uint8_t) (tempFlow >> 24);
+		data_packet[6 + offset] =  (uint8_t) (tempFlow >> 16);
+		data_packet[7 + offset] =  (uint8_t) (tempFlow >> 8);
+		data_packet[8 + offset] =  (uint8_t) (tempFlow);
 	}
 	
 	// Calculate checksum
-	for(ii = 0; ii < 20; ii++)									
+	for(ii = 0; ii < PACKET_BUFFER_SIZE; ii++)									
 	{
 		checksum ^= data_packet[ii];
 	}
@@ -262,8 +263,10 @@ uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so ofte
 
 uint8_t hardware_rs232_receive(void)
 {
+	uint8_t hostPacketVersion;
 	uint8_t mosfetActive;
 	uint8_t mosfetDeActive;
+	uint8_t resetFlow;
 	
 	if(!hardware_rs232_receive_packet())
 	{
@@ -277,14 +280,19 @@ uint8_t hardware_rs232_receive(void)
 	) {
 		return 0;
 	}
-	
-	mosfetActive = usart0_buffer.rs232_packet[3];
-	mosfetDeActive = usart0_buffer.rs232_packet[4]; 
+
+	// We don't do anything with this right now but maybe later the packet will be shaped differently and
+	// we'll need different logic.	
+	hostPacketVersion = usart0_buffer.rs232_packet[3]; 
+	mosfetActive = usart0_buffer.rs232_packet[4];
+	mosfetDeActive = usart0_buffer.rs232_packet[5];
+	resetFlow = usart0_buffer.rs232_packet[6];
 			
 	/* Each Mosfet is switched On via network */
 	/* It can be also switched OFF, but switch on takes priority */
 			
-	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
+	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) 
+	{
 		if ((mosfetActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
 		{
 			Mosfet_On_Off(ii, ON);
@@ -292,6 +300,11 @@ uint8_t hardware_rs232_receive(void)
 		else if ((mosfetDeActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
 		{
 			Mosfet_On_Off(ii, OFF);
+		}
+
+		if ((resetFlow & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
+		{
+			Reset_Flow(ii);
 		}
 	}
 	

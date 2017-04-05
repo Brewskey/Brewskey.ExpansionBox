@@ -5,7 +5,7 @@
 
 #define USART_BUFFER_SIZE 64 						// Must be power of 2, so that buffer rounding can be done just by AND operation
 #define USART_BUFFER_MASK (USART_BUFFER_SIZE - 1)	// If buffer is 64, mask with 63, which comes 0b111111, and when doing '&' it behaves like '%64'
-#define PACKET_BUFFER_SIZE 20						// We copy the RxBuffer into this in order to work with the data.
+#define PACKET_BUFFER_SIZE 21						// We copy the RxBuffer into this in order to work with the data.
 
 #define STATUS_ON		1
 #define STATUS_OFF		0
@@ -13,6 +13,18 @@
 #define RS232_TIMEOUT  40
 
 #define BOOTLOADER_JUMP_U	20
+
+#define USART_SEND_MESSAGE_VERSION 1
+
+/* V1 Send Packet
+*	00		- Destination (mainboard)
+*	01		- Source
+*	02		- Packet Type
+*	03		- Extension Board UART message version
+*	04		- Mosfet State
+*	05-21	- Every four bytes is the pulses for a tap
+*
+*/
 
 typedef volatile struct
 {
