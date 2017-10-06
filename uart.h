@@ -14,7 +14,7 @@
 
 #define BOOTLOADER_JUMP_U	20
 
-#define USART_SEND_MESSAGE_VERSION 1
+#define USART_SEND_MESSAGE_VERSION 0x01
 
 /* V1 Send Packet
 *	00		- Destination (mainboard)
