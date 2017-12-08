@@ -19,7 +19,8 @@ After compiling the source using Atmel Studio, you should see a `.hex` file in t
 1. Make sure you are targeting ATMega 8
 2. Select the hex file 
 
-  ![Flash setup](assets/flash.PNG?raw=true)
+![Flash setup](assets/flash.PNG?raw=true)
+  
 3. I recommend that you verify before trying to flash. This will make sure that you've plugged in the USBASP programmer correctly onto the expansion board.
 
 4. Click the Edit fuse button. Edit the fuses to look like this:
