@@ -12,6 +12,8 @@ You'll also need a USBASP programmer and adapter to flash the board. Here are so
 [USBASP programmer](https://www.amazon.com/gp/product/B00AX4WQ00/ref=ox_sc_act_title_1?smid=A30QSGOJR8LMXA&psc=1)
 [Adapter](https://www.amazon.com/gp/product/B00CW80MP6/ref=ox_sc_act_title_2?smid=A28PCZ3GGXGBES&psc=1)
 
+If you use the USBASP programmer, you'll need to [install USB drivers](https://rayshobby.net/dead-simple-driver-installation-for-usbasp-and-usbtiny-on-windows/)
+
 ## Flashing
 After compiling the source using Atmel Studio, you should see a `.hex` file in the debug/release binaries.
 **It is very important that you do not have the expansion box plugged into the Brewskey box while flashing. If you do, there is a good chance you will fry your board**
