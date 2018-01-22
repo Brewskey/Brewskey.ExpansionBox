@@ -57,7 +57,7 @@ Description: Increments Time out.
 void Incr_Flow_Timers(void)
 {
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
-		if(flowSensors[ii].timer < MAX_TIMER) {
+		if (flowSensors[ii].flow != 0) {
 			flowSensors[ii].timer++;
 		}
 	}
@@ -96,12 +96,6 @@ Description: Checks for any time out of any active Mosfet.
 ************************************************/
 void Check_Flow_Stop(void)
 {
-	/* Get the state of the Mosfets to know which ones are active */
-	uint8_t mosfetsActive = getStateMosfets();
-
-	/* Get the Mosfet timers*/
-	uint8_t *mosfetTimers = getMosfetTimers();
-
 	/*
 		For the time-out to trigger and switch off the Mosfet, the Mosfet need to be ON
 		and need to have some flow.
@@ -111,12 +105,14 @@ void Check_Flow_Stop(void)
 		time out can happen
 	*/
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
-		bool isMosfetActive = mosfetsActive & (uint8_t)pow(2, ii);
 		if (
-			(isMosfetActive && flowSensors[ii].timer > FLOW_TIMEOUT && flowSensors[ii].flow > MIN_FLOW) ||
-			((isMosfetActive && mosfetTimers) && mosfetTimers[ii] > MOSFET_NO_FLOW_TIMEOUT && flowSensors[ii].flow == 0)
+			flowSensors[ii].timer >= FLOW_TIMEOUT && flowSensors[ii].flow > MIN_FLOW
 		) {
 			Mosfet_On_Off(ii, OFF);
+			
+			/* Reset flow count only if Mosfet is off */
+			/* else it will reset every time it receive on from network */
+			Reset_Flow(ii);
 		}
 	}
 }

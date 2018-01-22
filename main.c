@@ -33,22 +33,15 @@ void main(void)
 							
 		hardware_rs232_comms();		
 		
-		if(sysTimer._100ms != sysTimer_old._100ms)
+		if(sysTimer._1s != sysTimer_old._1s)
 		{
-			sysTimer_old._100ms = sysTimer._100ms;
+			sysTimer_old._1s = sysTimer._1s;
 			
 			Incr_Flow_Timers();
 			
 			Check_Flow_Stop();			
 		}
 		
-		if(sysTimer._1s != sysTimer_old._1s)
-		{
-			sysTimer_old._1s = sysTimer._1s;
-
-			Incr_Mosfet_Timers();			
-		}	
-
 		/* Read the flow continuously */	
 		Read_Flow();
 	}

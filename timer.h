@@ -8,10 +8,6 @@ typedef struct{
 	uint8_t _10ms;
 	uint8_t _100ms;
 	uint8_t _1s;
-	uint8_t _1min;
-	uint8_t _1hr;
-	uint16_t _1day;
-
 } SysTimer_t;
 
 typedef struct

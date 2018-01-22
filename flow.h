@@ -2,9 +2,8 @@
 #define FLOW_H
 
 /* Set to 1 second since increment function executed every 100ms */
-#define FLOW_TIMEOUT	10
+#define FLOW_TIMEOUT	5 // 5 seconds
 #define MIN_FLOW		1
-#define MAX_TIMER 250 // I'm not sure why this is 250...
 
 typedef struct
 {
