@@ -33,3 +33,11 @@ After compiling the source using Atmel Studio, you should see a `.hex` file in t
 6. Click the write button under the `Flash` section of the main window.
 
 If you did everyting correctly the expansion box should now be flashed.
+
+## Packet format
+We have built a specific packet format for communication between the Brewskey box and the Expansion box.
+
+[Here is the documentation on the format](assets/SerialProtocol.pdf?raw=true)
+
+### V1
+TODO
