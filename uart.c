@@ -195,7 +195,7 @@ uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so ofte
 		{
 			if(!esc_flag)							/* Escape byte not set */
 			{
-				if(data == '+')						/* Getting sync byte of packet, since no escape byte beore it */
+				if(data == '+')						/* Getting sync byte of packet, since no escape byte before it */
 				{
 					count = 0;						/* Reset Counter - since start of packet */
 					for(ii = 0; ii < PACKET_BUFFER_SIZE; ii++)	
