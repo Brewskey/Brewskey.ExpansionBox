@@ -39,5 +39,50 @@ We have built a specific packet format for communication between the Brewskey bo
 
 [Here is the documentation on the format](assets/SerialProtocol.pdf?raw=true)
 
+---
+### Solenoid/Flow Sensor Settings Flags
+The solenoids are set on/off and flow sensor are reset by sending bit flags. These flags are also used for sending back the current solenoid status to the Brewskey box.
+* **Tap 1** - 0x03
+* **Tap 2** - 0x0C
+* **Tap 3** - 0x30
+* **Tap 4** - 0xC0
+
 ### V1
-TODO
+#### Data From Brewskey Box:
+The Brewskey box will periodically ping the Expansion box with this packet to trigger a response.
+* [0] - To Address
+* [1] - Source
+* [2] - Packet Type - **0x22**
+* [3] - Solenoids On - *uses settings flags*
+* [4] - Solenoids Off - *uses settings flags*
+* [5] - Reset Flow Sensors - *uses settings flags*
+* [6] - Checksum
+
+*<small><space> </space> Expansion boxes for the Brewskey Beta expect an additional byte between 2 & 3 for the Packet Version. This value is 0x01.</small>*
+
+#### Data To Brewskey Box
+The data sent back to the Brewskey box includes the state of the solenoids and the number of total pulses on each tap. *Pulses are sent as a 4 byte unsigned value stored in little endian format.*
+* [00] - To Address
+* [01] - Source
+* [02] - Packet Type - **0x33**
+* [03] - Solenoid Status -*uses settings flags*
+* [04] - **Tap 1 pulses**
+* [05]
+* [06]
+* [07]
+* [08] - **Tap 2 pulses**
+* [09]
+* [10]
+* [11]
+* [12] - **Tap 3 pulses**
+* [13]
+* [14]
+* [15]
+* [16] - **Tap 4 pulses**
+* [17]
+* [18]
+* [19]
+* [20] - Checksum
+
+*<small><space> </space> Expansion boxes for the Brewskey Beta expect an additional byte between 2 & 3 for the Packet Version. This value is 0x01.</small>*
+
