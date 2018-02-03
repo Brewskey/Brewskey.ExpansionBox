@@ -195,7 +195,7 @@ uint8_t hardware_rs232_receive_packet(void)		/* Call this function every so ofte
 		{
 			if(!esc_flag)							/* Escape byte not set */
 			{
-				if(data == '+')						/* Getting sync byte of packet, since no escape byte before it */
+				if(data == '+')						/* Getting sync byte of packet, since no escape byte beore it */
 				{
 					count = 0;						/* Reset Counter - since start of packet */
 					for(ii = 0; ii < PACKET_BUFFER_SIZE; ii++)	
@@ -322,7 +322,6 @@ void hardware_rs232_comms(void)
 		{
 			usart0_buffer.rs232_status = STATUS_ON;
 			timer.rs232_timeout = 0;
-			
 		}
 		
 		// Send reply back		

@@ -31,7 +31,7 @@ void Mosfet_On_Off(uint8_t mosfetIndex, STATE_t state)
 		return;
 	}
 	
-	uint8_t mosfetFlag = (uint8_t)pow(2, mosfetIndex);
+	uint8_t mosfetFlag = MOSFET_NETWORK_MASK[mosfetIndex];
 	if(state)
 	{
 		stateMosfets |= mosfetFlag;
