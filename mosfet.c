@@ -11,11 +11,21 @@ uint8_t stateMosfets = 0;
 
 void Mosfet_Init(void)
 {
+	Mosfet_ALL_On_Off(OFF);
+}
+
+/***********************************************
+Brief: Switches all mosfets On/Off.
+Param: State.
+Return: None.
+
+Description: Switches On/Off for all the Mosfets.
+************************************************/
+void Mosfet_ALL_On_Off(STATE_t state)
+{
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
-		// Switch off Mosfets
-		Mosfet_On_Off(ii, OFF);
+		Mosfet_On_Off(ii, state);
 	}
-	
 }
 
 /***********************************************

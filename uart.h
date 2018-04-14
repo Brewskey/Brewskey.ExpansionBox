@@ -14,7 +14,8 @@
 
 #define BOOTLOADER_JUMP_U	20
 
-#define USART_SEND_MESSAGE_VERSION 0x01
+// After configuration we store the address of this device (where it is on the bus)
+#define DEVICE_ADDRESS_EEPROM_LOCATION 0x00
 
 /* V1 Send Packet
 *	00		- Destination (mainboard)
@@ -36,20 +37,19 @@ typedef volatile struct
 	uint8_t TxTail;									// The index where the UART reads from the TxBuffer
 	uint8_t transmit_active;
 	uint8_t rs232_packet[PACKET_BUFFER_SIZE];
-	uint8_t rs232_status;
 } USARTBuffer;
 
 extern USARTBuffer usart0_buffer;
 
-
-void hardware_rs232_send(void);										// Build packet and start sending procedure
+void uart_init();
+void hardware_rs232_send_config(void);								// Build packet for config and start sending procedure
+void hardware_rs232_send_pour(void);								// Build packet for pour and start sending procedure
 void hardware_rs232_comms(void);									// Main function in main to check for communication
 char hardware_USART0_receive(void);									// Read byte from RX buffer */
 uint8_t hardware_rs232_receive(void);								// Decodes the packet and sets the hardware
 uint8_t hardware_USART0_Rx_Check(void);								// Checking if the buffer is empty
-void hardware_USART0_send_str(char* str);							// Sending a sting through UART - not normally used
 uint8_t hardware_rs232_receive_packet(void);						// Checks for any new packets received and decode the if found
-void hardware_USART0_send_esc(char stx,char* pstr,int length);		// Writing data in the TX buffer waiting to be sent through UART 
+void hardware_USART0_send_esc(uint8_t* pstr,int length);		// Writing data in the TX buffer waiting to be sent through UART 
 
 
 #endif

@@ -41,6 +41,4 @@ void timer_init(void)
 	sysTimer._1s 	= 0;
 	
 	sysTimer_old = sysTimer;
-	
-	timer.rs232_timeout = 0;	
 }

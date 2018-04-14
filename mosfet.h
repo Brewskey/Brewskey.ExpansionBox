@@ -14,6 +14,7 @@ typedef enum
 
 void Mosfet_Init(void);
 uint8_t getStateMosfets(void);
+void Mosfet_ALL_On_Off(STATE_t state);
 void Mosfet_On_Off(uint8_t mosfetIndex, STATE_t state);
 
 #endif

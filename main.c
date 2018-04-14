@@ -11,19 +11,16 @@
 SysTimer_t sysTimer;
 SysTimer_t sysTimer_old;
 
-Timer_t timer;
-
 USARTBuffer usart0_buffer;
 
-
-void main(void)
+int main(void)
 {
 	
 	hardware_init();	
+	uart_init();
 	timer_init();
 	Flow_Init();
 	Mosfet_Init();
-	
 	
 	wdt_enable(WDTO_2S);
 	
@@ -45,5 +42,7 @@ void main(void)
 		/* Read the flow continuously */	
 		Read_Flow();
 	}
+	
+	return 0;
 }
 

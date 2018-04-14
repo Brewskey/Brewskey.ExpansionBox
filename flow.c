@@ -16,11 +16,24 @@ void Flow_Init(void)
 }
 
 /***********************************************
+Brief: Reset all flow sensors.
+Return: None.
+
+Description: Reset the pulses/timer of all flow meters
+************************************************/
+void Reset_All_Flow(void)
+{
+	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
+		Reset_Flow(ii);
+	}
+}
+
+/***********************************************
 Brief: Reset flow.
 Param: Flow meter number.
 Return: None.
 
-Description: Reset the pulses of the respective flow meter
+Description: Reset the pulses/timer of the respective flow meter
 ************************************************/
 void Reset_Flow(uint8_t flowMeter)
 {
@@ -29,6 +42,7 @@ void Reset_Flow(uint8_t flowMeter)
 	}
 
 	flowSensors[flowMeter].flow = 0;
+	flowSensors[flowMeter].timer = 0;
 }
 
 /***********************************************
@@ -57,9 +71,7 @@ Description: Increments Time out.
 void Incr_Flow_Timers(void)
 {
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
-		if (flowSensors[ii].flow != 0) {
-			flowSensors[ii].timer++;
-		}
+		flowSensors[ii].timer++;
 	}
 }
 
@@ -106,12 +118,9 @@ void Check_Flow_Stop(void)
 	*/
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
 		if (
-			flowSensors[ii].timer >= FLOW_TIMEOUT && flowSensors[ii].flow > MIN_FLOW
+			flowSensors[ii].timer >= FLOW_TIMEOUT
 		) {
 			Mosfet_On_Off(ii, OFF);
-			
-			/* Reset flow count only if Mosfet is off */
-			/* else it will reset every time it receive on from network */
 			Reset_Flow(ii);
 		}
 	}
