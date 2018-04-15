@@ -414,7 +414,7 @@ void hardware_rs232_comms(void)
 		uint8_t packet_type = usart0_buffer.rs232_packet[2];
 	
 		// Send reply back		
-		if (1 || packet_type == 0x22) {
+		if (packet_type == 0x22) {
 			device_state = NORMAL_STATE;
 			hardware_rs232_send_pour();
 			return;
