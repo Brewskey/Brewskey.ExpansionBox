@@ -46,6 +46,22 @@ void Reset_Flow(uint8_t flowMeter)
 }
 
 /***********************************************
+Brief: Reset flow timer.
+Param: Flow meter number.
+Return: None.
+
+Description: Reset the timer of the respective flow meter
+************************************************/
+void Reset_Flow_Timer(uint8_t flowMeter)
+{
+	if (flowMeter >= PORT_COUNT) {
+		return;
+	}
+
+	flowSensors[flowMeter].timer = 0;
+}
+
+/***********************************************
 Brief: Returns pulses.
 Param: Flow meter number.
 Return: Pulses of the respective flow meter.

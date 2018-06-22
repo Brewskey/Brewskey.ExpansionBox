@@ -362,6 +362,7 @@ void receive_command_packet(void)
 		if ((mosfetActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
 		{
 			Mosfet_On_Off(ii, ON);
+			Reset_Flow_Timer(ii);
 		}
 		else if ((mosfetDeActive & MOSFET_NETWORK_MASK[ii]) == MOSFET_NETWORK_MASK[ii])
 		{

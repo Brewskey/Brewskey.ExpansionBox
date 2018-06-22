@@ -19,5 +19,6 @@ void Incr_Flow_Timers(void);
 uint32_t Get_Flow(uint8_t flowMeter);
 void Reset_All_Flow(void);
 void Reset_Flow(uint8_t flowMeter);
+void Reset_Flow_Timer(uint8_t flowMeter);
 
 #endif
