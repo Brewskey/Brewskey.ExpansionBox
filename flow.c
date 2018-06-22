@@ -87,7 +87,9 @@ Description: Increments Time out.
 void Incr_Flow_Timers(void)
 {
 	for (uint8_t ii = 0; ii < PORT_COUNT; ii++) {
-		flowSensors[ii].timer++;
+		if (flowSensors[ii].flow != 0) {
+			flowSensors[ii].timer++;
+		}
 	}
 }
 
